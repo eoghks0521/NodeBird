@@ -1,6 +1,7 @@
 import React, {useState, useCallback} from 'react';
 import {Form, Input, Checkbox, Button} from 'antd';
-import PropTypes from 'prop-types';
+import {useDispatch} from 'react-redux';
+import {signUpAction} from '../reducers/user';
 
 //일반 컨포넌트를 Pure 컨포넌트로 바꾸어 퍼포먼스를 높혔다.
 // const TextInput = memo(({value, onChange}) => {
@@ -27,14 +28,21 @@ const Signup = () => {
 	const [id, onChangeId] = useInput('');
 	const [nick, onChangeNick] = useInput('');
 	const [password, onChangePassword] = useInput('');
+	const dispatch = useDispatch();
 
-	const onSubmit = useCallback(() => {
+	const onSubmit = useCallback((e) => {
+		e.preventDefault();
 		if (password !== passwordCheck) {
 			return setPasswordError(true);
 		}
 		if (!term) {
 			return setTermError(true);
 		}
+		dispatch(signUpAction({
+			id,
+			password,
+			nick,
+		}));
 	}, [password, passwordCheck, term]);
 	const onChangePasswordChk = useCallback((e) => {
 		setPasswordError(e.target.value !== password);
@@ -46,7 +54,7 @@ const Signup = () => {
 	}, []);
 
 	return <>
-		<Form onFinish={onSubmit} style={{padding: 10}}>
+		<Form onSubmit={onSubmit} style={{padding: 10}}>
 			<div>
 				<label htmlFor="user-id">아이디</label>
 				<br/>
