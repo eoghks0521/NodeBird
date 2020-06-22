@@ -1,15 +1,38 @@
 export const initialState = {
   mainPosts: [{
+    id: 1,
     User: {
       id: 1,
-      nickname: '제로초',
+      nickname: '권대환이여~',
     },
     content: '첫 번째 게시글',
     img: '//post-phinf.pstatic.net/MjAxNzExMTVfODIg/MDAxNTEwNjc1MTUzMTgz.DI6A-lMO8Conr0PA5dLBGmiADloYAX2OSZs1IcOQcmMg.37fRGZKBR34LVL0F6RkKGWWx-ZgM97Je2ykPlY4mxeYg.JPEG/1.jpg?type=w800_q75',
+    Comments: [],
   }], // 화면에 보일 포스트들
   imagePaths: [], // 미리보기 이미지 경로
-  addPostErrorReason: false, // 포스트 업로드 실패 사유
+  addPostErrorReason: '', // 포스트 업로드 실패 사유
   isAddingPost: false, // 포스트 업로드 중
+  postAdded: false, // 포스트 업로드 성공
+  isAddingComment: false,
+  addCommentErrorReason: '',
+  commentAdded: false,
+};
+
+const dummyPost = {
+  User: {
+    id: 1,
+    nickname: 'Bigring',
+  },
+  content: '나는 더미다.',
+};
+
+const dummyComment = {
+  User: {
+    id: 1,
+    nickname: 'Bigring',
+  },
+  createdAt: new Date(),
+  content: '더미 댓글이다.',
 };
 
 export const LOAD_MAIN_POSTS_REQUEST = 'LOAD_MAIN_POSTS_REQUEST';
@@ -67,6 +90,53 @@ const reducer = (state = initialState, action) => {
     case ADD_POST_REQUEST: {
       return {
         ...state,
+        isAddingPost: true,
+        addPostErrorReason: '',
+        postAdded: false,
+      };
+    }
+    case ADD_POST_SUCCESS: {
+      return {
+        ...state,
+        isAddingPost: false,
+        mainPosts: [dummyPost, ...state.mainPosts],
+        postAdded: true,
+      };
+    }
+    case ADD_POST_FAILURE: {
+      return {
+        ...state,
+        isAddingPost: false,
+        addPostErrorReason: action.error,
+      };
+    }
+
+    case ADD_COMMENT_REQUEST: {
+      return {
+        ...state,
+        isAddingComment: true,
+        addCommentErrorReason: '',
+        CommentAdded: false,
+      };
+    }
+    case ADD_COMMENT_SUCCESS: {
+      const postIndex = state.mainPosts.findIndex((v) => v.id === action.data.postId);
+      const post = state.mainPosts[postIndex];
+      const Comments = [...post.Comments, dummyComment];
+      const mainPosts = [...state.mainPosts];
+      mainPosts[postIndex] = { ...post, Comments };
+      return {
+        ...state,
+        isAddingComment: false,
+        mainPosts,
+        CommentAdded: true,
+      };
+    }
+    case ADD_COMMENT_FAILURE: {
+      return {
+        ...state,
+        isAddingComment: false,
+        addCommentErrorReason: action.error,
       };
     }
     default: {
