@@ -146,3 +146,4 @@ front/.next
 .serverless
 /front/build/
 react-nodebird.pem
+/back/node_modules/

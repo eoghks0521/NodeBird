@@ -6,16 +6,20 @@ import {
   LOG_IN_REQUEST, LOG_IN_FAILURE, LOG_IN_SUCCESS, SIGN_UP_REQUEST, SIGN_UP_SUCCESS, SIGN_UP_FAILURE,
 } from '../reducers/user';
 
-function loginAPI() {
-  return axios.post('/login');
+axios.defaults.baseURL = 'http://localhost:3065/api';
+
+function loginAPI(loginData) {
+  return axios.post('/user/login', loginData,{
+    withCredentials: true, //이걸 넣어야 쿠키를 주고 받을 수 있다.
+  });
 }
 // call: 동기, fork: 비동기
-function* login() {
+function* login(action) {
   try {
-    // yield call(loginAPI);
-    yield delay(2000);
+    const result = yield call(loginAPI, action.data);
     yield put({ // Put은 dispatch
       type: LOG_IN_SUCCESS,
+      data: result.data,
     });
   } catch (e) {
     console.error(e);
@@ -25,13 +29,13 @@ function* login() {
   }
 }
 
-function signUpAPI() {
-  return axios.post('/login');
+function signUpAPI(signUpData) {
+  return axios.post('/user', signUpData);
 }
 
-function* signUp() {
+function* signUp(action) {
   try {
-    yield call(signUpAPI);
+    yield call(signUpAPI, action.data);
     yield put({ // Put은 dispatch
       type: SIGN_UP_SUCCESS,
     });

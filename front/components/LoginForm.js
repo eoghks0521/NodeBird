@@ -16,10 +16,11 @@ const LoginForm = () => {
     dispatch({
       type: LOG_IN_REQUEST,
       data: {
-        id, password,
+        userId: id,
+        password,
       },
     });
-  }, []);
+  }, [id, password]);
   return (
     <Form onSubmit={onSubmitForm} style={{ padding: '10px' }}>
       <div>
