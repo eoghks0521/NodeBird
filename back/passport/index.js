@@ -1,5 +1,6 @@
 const passport = require('passport');
 const local = require('./local');
+const db = require('../models');
 module.exports = () => {
   //req.login을 하면 serializeUser 실행
   passport.serializeUser((user, done) => { // 서버쪽에 [{ id: 3, cookie: 'asdfe' }] 형태로 쿠키 정보 관리-> 프론트에서 서버로 쿠키를 보내면 그 쿠키가 무슨 id에 연결되어 있는지 알 수 있다.

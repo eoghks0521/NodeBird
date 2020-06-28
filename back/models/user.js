@@ -22,8 +22,10 @@ module.exports = (sequelize, DataTypes) => {
     db.User.hasMany(db.Post, {as: 'Posts'});
     db.User.hasMany(db.Comment);
     db.User.belongsToMany(db.Post, { through: 'Like', as: 'Liked'});
-    db.User.belongsToMany(db.User, { through: 'Follow', as: 'Followers'});
-    db.User.belongsToMany(db.User, { through: 'Follow', as: 'Followings'});
+    //자바스크립트 객체에서 구분하는 이름이 as, 실제 DB에서 구분하는 이름이 foreignKey
+    //foreignkey는 다대다 관계에서만 추가하면 된다.
+    db.User.belongsToMany(db.User, { through: 'Follow', as: 'Followers', foreignKey: 'followingId'});
+    db.User.belongsToMany(db.User, { through: 'Follow', as: 'Followings', foreignKey: 'followerId'});
   };
 
   return User;

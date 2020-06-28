@@ -46,7 +46,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/user', userAPIRouter);
 app.use('/api/post', postAPIRouter);
-app.use('/api/post', postsAPIRouter);
+app.use('/api/posts', postsAPIRouter);
 
 app.listen(3065, () =>{
   console.log('server is running on http://localhost:3065');
