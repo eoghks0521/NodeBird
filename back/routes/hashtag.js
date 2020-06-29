@@ -1,20 +1,24 @@
 const express = require('express');
 const db = require('../models');
+
 const router = express.Router();
 
-router.get('/', async (req, res,next) => {
+router.get('/:tag', async (req, res, next) => {
   try{
     const posts = await db.Post.findAll({
       include: [{
+        model: db.Hashtag,
+        // 한글 같은 경우에는 주소창에 그대로 쳐지지 않는다. -> uri 컴포넌트로 바뀜 따라서 decode 해주어야함
+        where: { name: decodeURIComponent(req.params.tag) },
+      }, {
         model: db.User,
         attributes: ['id', 'nickname'],
       }, {
         model: db.Image,
       }],
-      order: [['createdAt', 'DESC']], //여러 컬럼을 조건으로 줄 수 있기 때문에 2차원 배열
     });
     res.json(posts);
-  } catch(e){
+  }catch (e) {
     console.error(e);
     next(e);
   }

@@ -10,7 +10,7 @@ import rootSaga from '../sagas';
 import AppLayout from '../components/AppLayout';
 import reducer from '../reducers';
 
-const NodeBird = ({ Component, store }) => (
+const NodeBird = ({ Component, store, pageProps }) => (
   // eslint-disable-next-line react/jsx-filename-extension
   <Provider store={store}>
     <Head>
@@ -18,7 +18,7 @@ const NodeBird = ({ Component, store }) => (
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/3.16.2/antd.css" />
     </Head>
     <AppLayout>
-      <Component />
+      <Component {...pageProps} />
     </AppLayout>
   </Provider>
 );
@@ -26,7 +26,19 @@ const NodeBird = ({ Component, store }) => (
 NodeBird.propTypes = {
   Component: PropTypes.elementType.isRequired,
   store: PropTypes.object.isRequired,
+  pageProps: PropTypes.object.isRequired,
 };
+
+NodeBird.getInitialProps = async (context) => {
+  const { ctx, Component } = context;
+  let pageProps = {};
+  if (Component.getInitialProps) {
+    pageProps = await Component.getInitialProps(ctx);
+  }
+  console.log('pageProps: ', pageProps);
+  return { pageProps };
+};
+
 const configureStore = (initialState, options) => {
   const sagaMiddleware = createSagaMiddleware();
   const middlewares = [sagaMiddleware];

@@ -29,6 +29,10 @@
     "jsx-a11y/anchor-is-valid": "off",
     "react/jsx-one-expression-per-line": "off",
     "consistent-return": "off",
-    "react/require-default-props": "off"
+    "react/require-default-props": "off",
+    "arrow-body-style": "off",
+    "react/jsx-props-no-spreading": "off",
+    "arrow-parens": "off",
+    "jsx-a11y/alt-text": "off"
   }
 }
