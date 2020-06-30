@@ -33,6 +33,13 @@
     "arrow-body-style": "off",
     "react/jsx-props-no-spreading": "off",
     "arrow-parens": "off",
-    "jsx-a11y/alt-text": "off"
+    "jsx-a11y/alt-text": "off",
+    "jsx-a11y/click-events-have-key-events": "off",
+    "jsx-a11y/no-noninteractive-element-interactions": "off",
+    "react/jsx-max-props-per-line": "off",
+    "react/jsx-first-prop-new-line": "off",
+    "react/jsx-closing-bracket-location": "off",
+    "object-curly-newline": "off",
+    "jsx-a11y/no-static-element-interactions": "off"
   }
 }

@@ -21,7 +21,13 @@ import {
   LOAD_COMMENTS_SUCCESS,
   LOAD_COMMENTS_FAILURE,
   LOAD_COMMENTS_REQUEST,
-  UPLOAD_IMAGES_SUCCESS, UPLOAD_IMAGES_FAILURE, UPLOAD_IMAGES_REQUEST,
+  UPLOAD_IMAGES_SUCCESS,
+  UPLOAD_IMAGES_FAILURE,
+  UPLOAD_IMAGES_REQUEST,
+  LIKE_POST_REQUEST,
+  LIKE_POST_SUCCESS,
+  LIKE_POST_FAILURE, UNLIKE_POST_SUCCESS, UNLIKE_POST_FAILURE, UNLIKE_POST_REQUEST,
+  RETWEET_REQUEST, RETWEET_SUCCESS, RETWEET_FAILURE,
 } from '../reducers/post';
 
 function addPostAPI(postData) {
@@ -192,6 +198,90 @@ function* watchUploadImages() {
   yield takeLatest(UPLOAD_IMAGES_REQUEST, uploadImages);
 }
 
+function likePostAPI(postId) {
+  return axios.post(`/post/${postId}/like`, {}, {
+    withCredentials: true,
+  });
+}
+
+function* likePost(action) {
+  try {
+    const result = yield call(likePostAPI, action.data);
+    yield put({
+      type: LIKE_POST_SUCCESS,
+      data: {
+        postId: action.data,
+        userId: result.data.userId,
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    yield put({
+      type: LIKE_POST_FAILURE,
+      error: e,
+    });
+  }
+}
+function* watchLikePost() {
+  yield takeLatest(LIKE_POST_REQUEST, likePost);
+}
+
+function UnLikePostAPI(postId) {
+  return axios.delete(`/post/${postId}/like`, {
+    withCredentials: true,
+  });
+}
+
+function* UnLikePost(action) {
+  try {
+    const result = yield call(UnLikePostAPI, action.data);
+    yield put({
+      type: UNLIKE_POST_SUCCESS,
+      data: {
+        postId: action.data,
+        userId: result.data.userId,
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    yield put({
+      type: UNLIKE_POST_FAILURE,
+      error: e,
+    });
+  }
+}
+function* watchUnLikePost() {
+  yield takeLatest(UNLIKE_POST_REQUEST, UnLikePost);
+}
+
+function retweetAPI(postId) {
+  return axios.delete(`/post/${postId}/like`, {
+    withCredentials: true,
+  });
+}
+
+function* retweet(action) {
+  try {
+    const result = yield call(retweetAPI, action.data);
+    yield put({
+      type: RETWEET_SUCCESS,
+      data: {
+        postId: action.data,
+        userId: result.data.userId,
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    yield put({
+      type: RETWEET_FAILURE,
+      error: e,
+    });
+  }
+}
+function* watchRetweet() {
+  yield takeLatest(RETWEET_REQUEST, retweet);
+}
+
 export default function* postSaga() {
   yield all([
     fork(watchAddPost),
@@ -201,5 +291,8 @@ export default function* postSaga() {
     fork(watchLoadHashtagPosts),
     fork(watchLoadUserPosts),
     fork(watchUploadImages),
+    fork(watchLikePost),
+    fork(watchUnLikePost),
+    fork(watchRetweet),
   ]);
 }

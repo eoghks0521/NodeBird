@@ -6,8 +6,14 @@ import Link from 'next/link';
 // import {RetweetOutlined,HeartOutlined,MessageOutlined,EllipsisOutlined} from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
-import { ADD_COMMENT_REQUEST, LOAD_COMMENTS_REQUEST } from '../reducers/post';
-import PostImages from "./PostImages";
+import {
+  ADD_COMMENT_REQUEST,
+  LOAD_COMMENTS_REQUEST,
+  LIKE_POST_REQUEST,
+  UNLIKE_POST_REQUEST,
+  RETWEET_REQUEST,
+} from '../reducers/post';
+import PostImages from './PostImages';
 
 const PostCard = ({ post }) => {
   const [commentFormOpened, setCommentFormOpened] = useState(false);
@@ -15,6 +21,8 @@ const PostCard = ({ post }) => {
   const { me } = useSelector((state) => state.user);
   const { commentAdded, isAddingComment } = useSelector((state) => state.post);
   const dispatch = useDispatch();
+
+  const liked = me && post.Likers && post.Likers.find(v => v.id === me.id);
 
   const onToggleComment = useCallback(() => {
     setCommentFormOpened((prev) => !prev);
@@ -47,6 +55,33 @@ const PostCard = ({ post }) => {
   const onChangeCommentText = useCallback((e) => {
     setCommentText(e.target.value);
   }, []);
+
+  const onToggleLike = useCallback(() => {
+    if (!me) {
+      return alert('로그인이 필요합니다.');
+    }
+    if (liked) { // 좋아요를 누른 상태
+      dispatch({
+        type: UNLIKE_POST_REQUEST,
+        data: post.id,
+      });
+    } else {
+      dispatch({
+        type: LIKE_POST_REQUEST,
+        data: post.id,
+      });
+    }
+  }, [me && me.id, post && post.id, liked]);
+
+  const onRetweet = useCallback(() => {
+    if (!me) {
+      return alert('로그인이 필요합니다.');
+    }
+    return dispatch({
+      type: RETWEET_REQUEST,
+      data: post.id,
+    });
+  }, []);
   return (
     <div>
       <Card
@@ -54,7 +89,9 @@ const PostCard = ({ post }) => {
         cover={post.Images[0] && <PostImages images={post.Images} />}
         actions={[
           <Icon type="retweet" key="retweet" />,
-          <Icon type="heart" key="heart" />,
+          <Icon type="heart" key="heart"
+            theme={liked ? 'twoTone' : 'outlined'}
+            twoToneColor="#eb2f96" onClick={onToggleLike} />,
           <Icon type="message" key="message" onClick={onToggleComment} />,
           <Icon type="ellipsis" key="ellipsis" />,
         ]}
@@ -126,6 +163,7 @@ PostCard.propTypes = {
     Comments: PropTypes.array,
     id: PropTypes.number,
     Images: PropTypes.array,
+    Likers: PropTypes.array,
   }),
 };
 export default PostCard;

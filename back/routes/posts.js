@@ -10,6 +10,11 @@ router.get('/', async (req, res,next) => {
         attributes: ['id', 'nickname'],
       }, {
         model: db.Image,
+      }, {
+        model: db.User,
+        through: 'Like',
+        as: 'Likers',
+        attributes: ['id'],
       }],
       order: [['createdAt', 'DESC']], //여러 컬럼을 조건으로 줄 수 있기 때문에 2차원 배열
     });
