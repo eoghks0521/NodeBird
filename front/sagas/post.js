@@ -32,6 +32,10 @@ import {
   DELETE_POST_SUCCESS, DELETE_POST_FAILURE, DELETE_POST_REQUEST,
 } from '../reducers/post';
 
+import {
+  ADD_POST_TO_ME,
+} from '../reducers/user';
+
 function addPostAPI(postData) {
   return axios.post('/post', postData, {
     withCredentials: true,
@@ -41,9 +45,13 @@ function addPostAPI(postData) {
 function* addPost(action) {
   try {
     const result = yield call(addPostAPI, action.data);
-    yield put({
+    yield put({ // 포스트 리듀서의 데이터 수정
       type: ADD_POST_SUCCESS,
       data: result.data,
+    });
+    yield put({ // 유저 리듀서의 데이터를 수정
+      type: ADD_POST_TO_ME,
+      data: result.data.id,
     });
   } catch (e) {
     yield put({
