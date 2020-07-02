@@ -7,6 +7,7 @@ export const initialState = {
   isAddingComment: false,
   addCommentErrorReason: '',
   commentAdded: false,
+  isDelPost: false,
 };
 
 export const LOAD_MAIN_POSTS_REQUEST = 'LOAD_MAIN_POSTS_REQUEST';
@@ -58,6 +59,10 @@ export const REMOVE_POST_FAILURE = 'REMOVE_POST_FAILURE';
 export const UPDATE_POST_REQUEST = 'UPDATE_POST_REQUEST';
 export const UPDATE_POST_SUCCESS = 'UPDATE_POST_SUCCESS';
 export const UPDATE_POST_FAILURE = 'UPDATE_POST_FAILURE';
+
+export const DELETE_POST_REQUEST = 'DELETE_POST_REQUEST';
+export const DELETE_POST_SUCCESS = 'DELETE_POST_SUCCESS';
+export const DELETE_POST_FAILURE = 'DELETE_POST_FAILURE';
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
@@ -214,6 +219,42 @@ const reducer = (state = initialState, action) => {
     case UNLIKE_POST_FAILURE: {
       return {
         ...state,
+      };
+    }
+
+    case RETWEET_REQUEST: {
+      return {
+        ...state,
+      };
+    }
+    case RETWEET_SUCCESS: {
+      return {
+        ...state,
+        mainPosts: [action.data, ...state.mainPosts],
+      };
+    }
+    case RETWEET_FAILURE: {
+      return {
+        ...state,
+      };
+    }
+    case DELETE_POST_REQUEST: {
+      return {
+        ...state,
+        isDelPost: true,
+      };
+    }
+    case DELETE_POST_SUCCESS: {
+      return {
+        ...state,
+        mainPosts: state.mainPosts.filter(v => v.id !== action.data),
+        isDelPost: false,
+      };
+    }
+    case DELETE_POST_FAILURE: {
+      return {
+        ...state,
+        isDelPost: false,
       };
     }
 

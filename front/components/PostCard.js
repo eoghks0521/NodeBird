@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
-  Avatar, Button, Card, Icon, Form, Input, List, Comment,
+  Avatar, Button, Card, Icon, Form, Input, List, Comment, Menu, Dropdown,
 } from 'antd';
 import Link from 'next/link';
 // import {RetweetOutlined,HeartOutlined,MessageOutlined,EllipsisOutlined} from '@ant-design/icons';
@@ -12,14 +12,16 @@ import {
   LIKE_POST_REQUEST,
   UNLIKE_POST_REQUEST,
   RETWEET_REQUEST,
+  DELETE_POST_REQUEST,
 } from '../reducers/post';
 import PostImages from './PostImages';
+import PostCardContent from './PostCardContent';
 
 const PostCard = ({ post }) => {
   const [commentFormOpened, setCommentFormOpened] = useState(false);
   const [commentText, setCommentText] = useState('');
   const { me } = useSelector((state) => state.user);
-  const { commentAdded, isAddingComment } = useSelector((state) => state.post);
+  const { commentAdded, isAddingComment, isDelPost } = useSelector((state) => state.post);
   const dispatch = useDispatch();
 
   const liked = me && post.Likers && post.Likers.find(v => v.id === me.id);
@@ -81,75 +83,99 @@ const PostCard = ({ post }) => {
       type: RETWEET_REQUEST,
       data: post.id,
     });
-  }, []);
+  }, [me && me.id, post && post.id]);
+
+  const handleDeleteClick = useCallback(() => {
+    if (me.id !== post.User.id) {
+      return alert('내 게시물이 아닙니다.');
+    }
+    return dispatch({
+      type: DELETE_POST_REQUEST,
+      data: post.id,
+    });
+  }, [me && me.id, post && post.id]);
+
+  const menu = (
+    <Menu>
+      <Menu.Item key="1" onClick={handleDeleteClick}>
+        <Button loading={isDelPost}>삭제</Button>
+      </Menu.Item>
+    </Menu>
+  );
+
   return (
     <div>
       <Card
         key={+post.createdAt}
-        cover={post.Images[0] && <PostImages images={post.Images} />}
+        cover={post.Images && post.Images[0] && <PostImages images={post.Images} />}
         actions={[
-          <Icon type="retweet" key="retweet" />,
+          <Icon type="retweet" key="retweet" onClick={onRetweet} />,
           <Icon type="heart" key="heart"
             theme={liked ? 'twoTone' : 'outlined'}
             twoToneColor="#eb2f96" onClick={onToggleLike} />,
           <Icon type="message" key="message" onClick={onToggleComment} />,
-          <Icon type="ellipsis" key="ellipsis" />,
+          <Dropdown overlay={menu} placement="bottomCenter">
+            <Icon type="ellipsis" key="ellipsis" />
+          </Dropdown>,
         ]}
+        title={post.RetweetId ? `${post.User.nickname}님이 리트윗하셨습니다.` : null}
         extra={<Button>팔로우</Button>}
       >
-        <Card.Meta
-          avatar={(
-            <Link href={{ pathname: '/user', query: { id: post.User.id } }} as={`/user/${post.User.id}`}>
-              <a><Avatar>{post.User.nickname[0]}</Avatar></a>
-            </Link>
-          )}
-          title={post.User.nickname}
-          description={(
-            <div>{post.content.split(/(#[^\s]+)/g).map((v) => {
-              if (v.match(/#[^\s]+/)) {
-                return (
-                  <Link
-                    href={{ pathname: '/hashtag', query: { tag: v.slice(1) } }}
-                    as={`/hashtag/${v.slice(1)}`}
-                    key={v}
-                  >
-                    <a>{v}</a>
+        {post.RetweetId && post.Retweet
+          ? (
+            <Card
+              cover={post.Retweet.Images[0] && <PostImages images={post.Retweet.Images} />}
+            >
+              <Card.Meta
+                avatar={(
+                  <Link href={{ pathname: '/user', query: { id: post.Retweet.User.id } }} as={`/user/${post.Retweet.User.id}`}>
+                    <a><Avatar>{post.Retweet.User.nickname[0]}</Avatar></a>
                   </Link>
-                );
-              }
-              return v;
-            })}
-            </div>
+              )}
+                title={post.Retweet.User.nickname}
+                description={<PostCardContent postData={post.Retweet.content} />}
+            />
+            </Card>
+          )
+          : (
+            <Card.Meta
+              avatar={(
+                <Link href={{ pathname: '/user', query: { id: post.User.id } }} as={`/user/${post.User.id}`}>
+                  <a><Avatar>{post.User.nickname[0]}</Avatar></a>
+                </Link>
+              )}
+              title={post.User.nickname}
+              description={<PostCardContent postData={post.content} />}
+            />
           )}
-        />
       </Card>
       {commentFormOpened && (
-      <>
-        <Form onSubmit={onSubmitComment}>
-          <Form.Item>
-            <Input.TextArea rows={4} value={commentText} onChange={onChangeCommentText} />
-          </Form.Item>
-          <Button type="primary" htmlType="submit" loading={isAddingComment}>삐약</Button>
-        </Form>
-        <List
-          header={`${post.Comments ? post.Comments.length : 0} 댓글`}
-          itemLayout="horizontal"
-          dataSource={post.Comments || []}
-          renderItem={(item) => (
-            <li>
-              <Comment
-                author={item.User.nickname}
-                avatar={(
-                  <Link href={{ pathname: '/user', query: { id: item.User.id } }} as={`/user/${item.User.id}`}>
-                    <a><Avatar>{item.User.nickname[0]}</Avatar></a>
-                  </Link>
-                )}
-                content={item.content}
-              />
-            </li>
-          )}
-        />
-      </>
+        <>
+          <Form onSubmit={onSubmitComment}>
+            <Form.Item>
+              <Input.TextArea rows={4} value={commentText} onChange={onChangeCommentText} />
+            </Form.Item>
+            <Button type="primary" htmlType="submit" loading={isAddingComment}>삐약</Button>
+          </Form>
+          <List
+            header={`${post.Comments ? post.Comments.length : 0} 댓글`}
+            itemLayout="horizontal"
+            dataSource={post.Comments || []}
+            renderItem={(item) => (
+              <li>
+                <Comment
+                  author={item.User.nickname}
+                  avatar={(
+                    <Link href={{ pathname: '/user', query: { id: item.User.id } }} as={`/user/${item.User.id}`}>
+                      <a><Avatar>{item.User.nickname[0]}</Avatar></a>
+                    </Link>
+                  )}
+                  content={item.content}
+                />
+              </li>
+            )}
+          />
+        </>
       )}
     </div>
   );

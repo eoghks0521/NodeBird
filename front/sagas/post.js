@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import {
   all, call, fork, takeLatest, delay, put,
 } from 'redux-saga/effects';
@@ -28,6 +29,7 @@ import {
   LIKE_POST_SUCCESS,
   LIKE_POST_FAILURE, UNLIKE_POST_SUCCESS, UNLIKE_POST_FAILURE, UNLIKE_POST_REQUEST,
   RETWEET_REQUEST, RETWEET_SUCCESS, RETWEET_FAILURE,
+  DELETE_POST_SUCCESS, DELETE_POST_FAILURE, DELETE_POST_REQUEST,
 } from '../reducers/post';
 
 function addPostAPI(postData) {
@@ -255,7 +257,7 @@ function* watchUnLikePost() {
 }
 
 function retweetAPI(postId) {
-  return axios.delete(`/post/${postId}/like`, {
+  return axios.post(`/post/${postId}/retweet`, {}, {
     withCredentials: true,
   });
 }
@@ -265,10 +267,7 @@ function* retweet(action) {
     const result = yield call(retweetAPI, action.data);
     yield put({
       type: RETWEET_SUCCESS,
-      data: {
-        postId: action.data,
-        userId: result.data.userId,
-      },
+      data: result.data,
     });
   } catch (e) {
     console.error(e);
@@ -276,10 +275,36 @@ function* retweet(action) {
       type: RETWEET_FAILURE,
       error: e,
     });
+    alert(e.response && e.response.data);
   }
 }
 function* watchRetweet() {
   yield takeLatest(RETWEET_REQUEST, retweet);
+}
+
+function deletePostAPI(postId) {
+  return axios.delete(`/post/${postId}`, {
+    withCredentials: true,
+  });
+}
+
+function* deletePost(action) {
+  try {
+    const result = yield call(deletePostAPI, action.data);
+    yield put({
+      type: DELETE_POST_SUCCESS,
+      data: result.data,
+    });
+  } catch (e) {
+    console.error(e);
+    yield put({
+      type: DELETE_POST_FAILURE,
+      error: e,
+    });
+  }
+}
+function* watchDelPost() {
+  yield takeLatest(DELETE_POST_REQUEST, deletePost);
 }
 
 export default function* postSaga() {
@@ -294,5 +319,6 @@ export default function* postSaga() {
     fork(watchLikePost),
     fork(watchUnLikePost),
     fork(watchRetweet),
+    fork(watchDelPost),
   ]);
 }

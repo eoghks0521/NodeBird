@@ -15,6 +15,15 @@ router.get('/', async (req, res,next) => {
         through: 'Like',
         as: 'Likers',
         attributes: ['id'],
+      }, {
+        model: db.Post,
+        as: 'Retweet',
+        include: [{
+          model: db.User,
+          attributes: ['id', 'nickname'],
+        }, {
+          model: db.Image,
+        }],
       }],
       order: [['createdAt', 'DESC']], //여러 컬럼을 조건으로 줄 수 있기 때문에 2차원 배열
     });

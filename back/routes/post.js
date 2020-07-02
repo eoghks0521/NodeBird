@@ -2,7 +2,7 @@ const express = require('express');
 const db = require('../models');
 const multer = require('multer');
 const path = require('path');
-const { isLoggedIn } = require('./middleware');
+const { isLoggedIn, isExistPost } = require('./middleware');
 const router = express.Router();
 
 const upload = multer({
@@ -66,6 +66,19 @@ router.post('/', isLoggedIn, upload.none(), async (req, res, next) => {
   }
 });
 
+router.delete('/:id', isLoggedIn, isExistPost, async (req, res, next) => {
+  try{
+    const post = req.post
+    await db.Post.destroy({
+      where: {id : post.id}}).then(() => {
+        res.json(post.id);
+    });
+  }catch (e) {
+    console.error(e);
+    next(e);
+  }
+});
+
 
 //image는 formData에서 키 값으로 설정한 값과 같아야한다. 하나의 이름으로 여러개를 올릴 때
 //field는 formData에서 여러개 키 값을 사용하여 여러개 이미지를 업로드할 때
@@ -75,12 +88,9 @@ router.post('/images', upload.array('image'), (req, res) => {
   res.json(req.files.map(v=> v.filename));
 });
 
-router.get('/:id/comments', async (req, res, next) => {
+router.get('/:id/comments', isExistPost, async (req, res, next) => {
   try {
-    const post = await db.Post.findOne({ where: { id: req.params.id } });
-    if(!post){
-      return res.status(404).send('포스트가 존재하지 않습니다.');
-    }
+    const post = req.post
     const comments = await db.Comment.findAll({
       where: {
         PostId: req.params.id,
@@ -98,12 +108,9 @@ router.get('/:id/comments', async (req, res, next) => {
   }
 });
 
-router.post('/:id/comment', isLoggedIn, async (req, res, next) => {
+router.post('/:id/comment', isLoggedIn, isExistPost, async (req, res, next) => {
   try{
-    const post = await db.Post.findOne({ where: { id: req.params.id } });
-    if(!post){
-      return res.status(404).send('포스트가 존재하지 않습니다.');
-    }
+    const post = req.post
     const newComment = await db.Comment.create({
       PostId: post.id,
       UserId: req.user.id,
@@ -126,12 +133,9 @@ router.post('/:id/comment', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post('/:id/like', isLoggedIn, async (req, res, next) => {
+router.post('/:id/like', isLoggedIn, isExistPost, async (req, res, next) => {
   try{
-    const post = await db.Post.findOne({where: { id: req.params.id}});
-    if (!post) {
-      return res.status(404).send('포스트가 조재하지 않습니다.');
-    }
+    const post = req.post
     await post.addLiker(req.user.id);
     res.json({ userId: req.user.id });
   }catch (e) {
@@ -140,17 +144,66 @@ router.post('/:id/like', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.delete('/:id/like', isLoggedIn, async (req, res, next) => {
+router.delete('/:id/like', isLoggedIn, isExistPost, async (req, res, next) => {
   try{
-    const post = await db.Post.findOne({where: { id: req.params.id}});
-    if (!post) {
-      return res.status(404).send('포스트가 조재하지 않습니다.');
-    }
+    const post = req.post
     await post.removeLiker(req.user.id);
     res.json({ userId: req.user.id });
   }catch (e) {
     console.error(e);
     next(e);
+  }
+});
+
+router.post('/:id/retweet', isLoggedIn, isExistPost, async (req, res, next)=> {
+  try{
+    const post = await db.Post.findOne({
+      where: { id: req.params.id },
+      include: [{
+        model: db.Post,
+        as: 'Retweet',
+      }]
+    });
+    if (!post) {
+      return res.status(404).send('포스트가 존재하지 않습니다.');
+    }
+    if( req.user.id === post.UserId || (post.Retweet && post.Retweet.UserId === req.user.id)) {
+      return res.status(403).send('자신의 글을 리트윗 할 수 없습니다.');
+    }
+    const retweetTargetId = post.RetweetId || post.id;
+    const exPost = await db.Post.findOne({
+      where: {
+        UserId: req.user.id,
+        RetweetId: retweetTargetId,
+      },
+    });
+    if (exPost) {
+      return res.status(403).send('이미 리트윗했습니다.');
+    }
+    const retweet = await db.Post.create({
+      UserId: req.user.id,
+      RetweetId: retweetTargetId,
+      content: 'retweet',
+    });
+    const retweetWithPrevPost = await db.Post.findOne({
+      where: { id: retweet.id },
+      include: [{
+        model: db.User,
+        attributes: ['id', 'nickname'],
+      }, {
+        model: db.Post,
+        as: 'Retweet',
+        include: [{
+          model: db.User,
+          attributes: ['id', 'nickname'],
+        }, {
+          model: db.Image,
+        }],
+      }],
+    });
+    res.json(retweetWithPrevPost);
+  } catch(e){
+
   }
 })
 
