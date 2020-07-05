@@ -77,7 +77,7 @@ function* logOut(action) {
 }
 
 function loadUserAPI(userId) {
-  return axios.get(userId ? `/user/${userId}` : '/user/', {
+  return axios.get(userId ? `/user/${userId || 0}` : '/user/', {
     withCredentials: true,
   });
 }
@@ -156,7 +156,7 @@ function* watchUnFollow() {
 }
 
 function loadFollowersAPI(userId) {
-  return axios.get(`/user/${userId}/followers`, {
+  return axios.get(`/user/${userId || 0}/followers`, {
     withCredentials: true,
   });
 }
@@ -181,7 +181,7 @@ function* watchLoadFollowers() {
 }
 
 function loadFollowingsAPI(userId) {
-  return axios.get(`/user/${userId}/followings`, {
+  return axios.get(`/user/${userId || 0}/followings`, {
     withCredentials: true,
   });
 }

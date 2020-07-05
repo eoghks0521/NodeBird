@@ -121,7 +121,9 @@ router.post('/login', (req, res, next) => {
 router.get('/:id/followings', isLoggedIn, async (req, res, next) => {
   try {
     const user = await db.User.findOne({
-      where: { id: parseInt(req.params.id, 10) },
+      // 시퀄라이즈에서는 where 절에 undefined가 들어가면 에러가 발생하기 때문에
+      // 에러를 막기 위해 0을 넣음. 0이 들어가는 경우는 아무것도 검색되지 않습니다.
+      where: { id: parseInt(req.params.id, 10) || (req.user && req.user.id) || 0 },
     });
     const followers =await user.getFollowings({
       attributes: ['id', 'nickname'],
@@ -135,7 +137,7 @@ router.get('/:id/followings', isLoggedIn, async (req, res, next) => {
 router.get('/:id/followers', isLoggedIn, async (req, res, next) => {
   try {
     const user = await db.User.findOne({
-      where: { id: parseInt(req.params.id, 10) },
+      where: { id: parseInt(req.params.id, 10) || (req.user && req.user.id) || 0 },
     });
     const followers =await user.getFollowers({
       attributes: ['id', 'nickname'],
@@ -190,7 +192,7 @@ router.get('/:id/posts', async (req, res, next) => {
   try{
     const posts = await db.Post.findAll({
       where: {
-        UserId: parseInt(req.params.id, 10),
+        UserId: parseInt(req.params.id, 10) || (req.user && req.user.id) || 0,
         RetweetId: null,
       },
       include: [{

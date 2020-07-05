@@ -7,7 +7,7 @@ export const initialState = {
   isAddingComment: false,
   addCommentErrorReason: '',
   commentAdded: false,
-  isDelPost: false,
+  isMenuLoading: false,
 };
 
 export const LOAD_MAIN_POSTS_REQUEST = 'LOAD_MAIN_POSTS_REQUEST';
@@ -241,20 +241,20 @@ const reducer = (state = initialState, action) => {
     case DELETE_POST_REQUEST: {
       return {
         ...state,
-        isDelPost: true,
+        isMenuLoading: true,
       };
     }
     case DELETE_POST_SUCCESS: {
       return {
         ...state,
         mainPosts: state.mainPosts.filter(v => v.id !== action.data),
-        isDelPost: false,
+        isMenuLoading: false,
       };
     }
     case DELETE_POST_FAILURE: {
       return {
         ...state,
-        isDelPost: false,
+        isMenuLoading: false,
       };
     }
 

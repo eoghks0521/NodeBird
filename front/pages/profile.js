@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
   Button, List, Card, Icon,
 } from 'antd';
@@ -11,25 +11,8 @@ import PostCard from '../components/PostCard';
 
 const Profile = () => {
   const dispatch = useDispatch();
-  const { me, followerList, followingList } = useSelector(state => state.user);
+  const { followerList, followingList } = useSelector(state => state.user);
   const { mainPosts } = useSelector(state => state.post);
-  useEffect(() => {
-    if (me) {
-      dispatch({
-        type: LOAD_FOLLOWERS_REQUEST,
-        data: me.id,
-      });
-      dispatch({
-        type: LOAD_FOLLOWINGS_REQUEST,
-        data: me.id,
-      });
-      dispatch({
-        type: LOAD_USER_POSTS_REQUEST,
-        data: me.id,
-      });
-    }
-  }, [me && me.id]);
-
   const onUnfollow = useCallback(userId => () => {
     dispatch({
       type: UNFOLLOW_USER_REQUEST,
@@ -80,6 +63,24 @@ const Profile = () => {
       </div>
     </div>
   );
+};
+Profile.getInitialProps = async (context) => {
+  const state = context.store.getState();
+  // 맨 먼저 LOAD_USERS_REQUEST가 app에서 실행되고 밑에가 실행됨
+  context.store.dispatch({
+    type: LOAD_FOLLOWERS_REQUEST,
+    data: state.user.me && state.user.me.id,
+  });
+  context.store.dispatch({
+    type: LOAD_FOLLOWINGS_REQUEST,
+    data: state.user.me && state.user.me.id,
+  });
+  context.store.dispatch({
+    type: LOAD_USER_POSTS_REQUEST,
+    data: state.user.me && state.user.me.id,
+  });
+  // 하지만 아직 LOAD_USER_SUCCESS 전이기 때문에 me 존재 x
+  // id 기본 값으로 0을 넣어서 0인 경우 자기 자신의 정보를 응답하도록 설정하여 문제 해결
 };
 
 export default Profile;

@@ -25,7 +25,7 @@ const PostCard = ({ post }) => {
   const [commentFormOpened, setCommentFormOpened] = useState(false);
   const [commentText, setCommentText] = useState('');
   const { me } = useSelector((state) => state.user);
-  const { commentAdded, isAddingComment, isDelPost } = useSelector((state) => state.post);
+  const { commentAdded, isAddingComment, isMenuLoading } = useSelector((state) => state.post);
   const dispatch = useDispatch();
 
   const liked = me && post.Likers && post.Likers.find(v => v.id === me.id);
@@ -102,7 +102,10 @@ const PostCard = ({ post }) => {
   const menu = (
     <Menu>
       <Menu.Item key="1" onClick={handleDeleteClick}>
-        <Button loading={isDelPost}>삭제</Button>
+        삭제
+      </Menu.Item>
+      <Menu.Item key="1" onClick={handleDeleteClick}>
+        수정
       </Menu.Item>
     </Menu>
   );
@@ -129,7 +132,7 @@ const PostCard = ({ post }) => {
             theme={liked ? 'twoTone' : 'outlined'}
             twoToneColor="#eb2f96" onClick={onToggleLike} />,
           <Icon type="message" key="message" onClick={onToggleComment} />,
-          <Dropdown overlay={menu} placement="bottomCenter">
+          <Dropdown overlay={menu} placement="bottomCenter" loading={isMenuLoading}>
             <Icon type="ellipsis" key="ellipsis" />
           </Dropdown>,
         ]}
