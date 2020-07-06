@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
-  Avatar, Button, Card, Icon, Form, Input, List, Comment, Menu, Dropdown,
+  Avatar, Button, Card, Icon, Form, Input, List, Comment, Popover,
 } from 'antd';
 import Link from 'next/link';
 // import {RetweetOutlined,HeartOutlined,MessageOutlined,EllipsisOutlined} from '@ant-design/icons';
@@ -12,7 +12,7 @@ import {
   LIKE_POST_REQUEST,
   UNLIKE_POST_REQUEST,
   RETWEET_REQUEST,
-  DELETE_POST_REQUEST,
+  REMOVE_POST_REQUEST,
 } from '../reducers/post';
 import {
   FOLLOW_USER_REQUEST,
@@ -25,7 +25,7 @@ const PostCard = ({ post }) => {
   const [commentFormOpened, setCommentFormOpened] = useState(false);
   const [commentText, setCommentText] = useState('');
   const { me } = useSelector((state) => state.user);
-  const { commentAdded, isAddingComment, isMenuLoading } = useSelector((state) => state.post);
+  const { commentAdded, isAddingComment, removePostLoading } = useSelector((state) => state.post);
   const dispatch = useDispatch();
 
   const liked = me && post.Likers && post.Likers.find(v => v.id === me.id);
@@ -89,26 +89,13 @@ const PostCard = ({ post }) => {
     });
   }, [me && me.id, post && post.id]);
 
-  const handleDeleteClick = useCallback(() => {
-    if (me.id !== post.User.id) {
-      return alert('내 게시물이 아닙니다.');
-    }
+  const onRemovePost = useCallback(() => {
     return dispatch({
-      type: DELETE_POST_REQUEST,
+      type: REMOVE_POST_REQUEST,
       data: post.id,
     });
   }, [me && me.id, post && post.id]);
 
-  const menu = (
-    <Menu>
-      <Menu.Item key="1" onClick={handleDeleteClick}>
-        삭제
-      </Menu.Item>
-      <Menu.Item key="1" onClick={handleDeleteClick}>
-        수정
-      </Menu.Item>
-    </Menu>
-  );
   const onFollow = useCallback(userId => () => {
     dispatch({
       type: FOLLOW_USER_REQUEST,
@@ -132,9 +119,23 @@ const PostCard = ({ post }) => {
             theme={liked ? 'twoTone' : 'outlined'}
             twoToneColor="#eb2f96" onClick={onToggleLike} />,
           <Icon type="message" key="message" onClick={onToggleComment} />,
-          <Dropdown overlay={menu} placement="bottomCenter" loading={isMenuLoading}>
+          <Popover
+            key="more"
+            content={(
+              <Button.Group>
+                {me && post.User.id === me.id
+                  ? (
+                    <>
+                      <Button>수정</Button>
+                      <Button type="danger" loading={removePostLoading} onClick={onRemovePost}>삭제</Button>
+                    </>
+                  )
+                  : <Button>신고</Button>}
+              </Button.Group>
+          )}
+        >
             <Icon type="ellipsis" key="ellipsis" />
-          </Dropdown>,
+          </Popover>,
         ]}
         title={post.RetweetId ? `${post.User.nickname}님이 리트윗하셨습니다.` : null}
         extra={!me || post.User.id === me.id

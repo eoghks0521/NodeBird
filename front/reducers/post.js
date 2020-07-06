@@ -7,7 +7,7 @@ export const initialState = {
   isAddingComment: false,
   addCommentErrorReason: '',
   commentAdded: false,
-  isMenuLoading: false,
+  removePostLoading: false,
 };
 
 export const LOAD_MAIN_POSTS_REQUEST = 'LOAD_MAIN_POSTS_REQUEST';
@@ -59,10 +59,6 @@ export const REMOVE_POST_FAILURE = 'REMOVE_POST_FAILURE';
 export const UPDATE_POST_REQUEST = 'UPDATE_POST_REQUEST';
 export const UPDATE_POST_SUCCESS = 'UPDATE_POST_SUCCESS';
 export const UPDATE_POST_FAILURE = 'UPDATE_POST_FAILURE';
-
-export const DELETE_POST_REQUEST = 'DELETE_POST_REQUEST';
-export const DELETE_POST_SUCCESS = 'DELETE_POST_SUCCESS';
-export const DELETE_POST_FAILURE = 'DELETE_POST_FAILURE';
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
@@ -238,23 +234,23 @@ const reducer = (state = initialState, action) => {
         ...state,
       };
     }
-    case DELETE_POST_REQUEST: {
+    case REMOVE_POST_REQUEST: {
       return {
         ...state,
-        isMenuLoading: true,
+        removePostLoading: true,
       };
     }
-    case DELETE_POST_SUCCESS: {
+    case REMOVE_POST_SUCCESS: {
       return {
         ...state,
         mainPosts: state.mainPosts.filter(v => v.id !== action.data),
-        isMenuLoading: false,
+        removePostLoading: false,
       };
     }
-    case DELETE_POST_FAILURE: {
+    case REMOVE_POST_FAILURE: {
       return {
         ...state,
-        isMenuLoading: false,
+        removePostLoading: false,
       };
     }
 

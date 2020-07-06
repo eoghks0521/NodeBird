@@ -147,3 +147,4 @@ front/.next
 /front/build/
 react-nodebird.pem
 /back/node_modules/
+/back/uploads/

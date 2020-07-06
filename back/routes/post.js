@@ -68,11 +68,12 @@ router.post('/', isLoggedIn, upload.none(), async (req, res, next) => {
 
 router.delete('/:id', isLoggedIn, isExistPost, async (req, res, next) => {
   try{
-    const post = req.post
     await db.Post.destroy({
-      where: {id : post.id}}).then(() => {
-        res.json(post.id);
+      where: {
+        id : req.params.id,
+      },
     });
+    res.send(req.params.id);
   }catch (e) {
     console.error(e);
     next(e);
@@ -90,7 +91,6 @@ router.post('/images', upload.array('image'), (req, res) => {
 
 router.get('/:id/comments', isExistPost, async (req, res, next) => {
   try {
-    const post = req.post
     const comments = await db.Comment.findAll({
       where: {
         PostId: req.params.id,
@@ -112,7 +112,7 @@ router.post('/:id/comment', isLoggedIn, isExistPost, async (req, res, next) => {
   try{
     const post = req.post
     const newComment = await db.Comment.create({
-      PostId: post.id,
+      PostId: req.params.id,
       UserId: req.user.id,
       content: req.body.content,
     });
