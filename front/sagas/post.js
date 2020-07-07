@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import {
-  all, call, fork, takeLatest, delay, put,
+  all, call, fork, takeLatest, delay, put, throttle,
 } from 'redux-saga/effects';
 import axios from 'axios';
 import {
@@ -65,13 +65,13 @@ function* watchAddPost() {
   yield takeLatest(ADD_POST_REQUEST, addPost);
 }
 
-function loadMainPostsAPI() {
-  return axios.get('/posts');
+function loadMainPostsAPI(lastId = 0, limit = 10) {
+  return axios.get(`/posts?lastId=${lastId}&limit=${limit}`);
 }
 
-function* loadMainPosts() {
+function* loadMainPosts(action) {
   try {
-    const result = yield call(loadMainPostsAPI);
+    const result = yield call(loadMainPostsAPI, action.lastId);
     yield put({
       type: LOAD_MAIN_POSTS_SUCCESS,
       data: result.data,
@@ -84,7 +84,7 @@ function* loadMainPosts() {
   }
 }
 function* watchLoadMainPosts() {
-  yield takeLatest(LOAD_MAIN_POSTS_REQUEST, loadMainPosts);
+  yield throttle(2000, LOAD_MAIN_POSTS_REQUEST, loadMainPosts);
 }
 
 function addCommentAPI(data) {
@@ -139,13 +139,13 @@ function* watchLoadComment() {
   yield takeLatest(LOAD_COMMENTS_REQUEST, loadComments);
 }
 
-function loadHashtagPostsAPI(tag) {
-  return axios.get(`/hashtag/${encodeURIComponent(tag)}`);
+function loadHashtagPostsAPI(tag, lastId = 0, limit = 10) {
+  return axios.get(`/hashtag/${encodeURIComponent(tag)}?lastId=${lastId}&limit=${limit}`);
 }
 
 function* loadHashPosts(action) {
   try {
-    const result = yield call(loadHashtagPostsAPI, action.data);
+    const result = yield call(loadHashtagPostsAPI, action.data, action.lastId);
     yield put({
       type: LOAD_HASHTAG_POSTS_SUCCESS,
       data: result.data,
@@ -158,16 +158,16 @@ function* loadHashPosts(action) {
   }
 }
 function* watchLoadHashtagPosts() {
-  yield takeLatest(LOAD_HASHTAG_POSTS_REQUEST, loadHashPosts);
+  yield throttle(2000, LOAD_HASHTAG_POSTS_REQUEST, loadHashPosts);
 }
 
-function loadUserPostsAPI(id) {
-  return axios.get(`/user/${id || 0}/posts`);
+function loadUserPostsAPI(id, lastId = 0, limit = 10) {
+  return axios.get(`/user/${id || 0}/posts?lastId=${lastId}&limit=${limit}`);
 }
 
 function* loadUserPosts(action) {
   try {
-    const result = yield call(loadUserPostsAPI, action.data);
+    const result = yield call(loadUserPostsAPI, action.data, action.lastId);
     yield put({
       type: LOAD_USER_POSTS_SUCCESS,
       data: result.data,
@@ -180,7 +180,7 @@ function* loadUserPosts(action) {
   }
 }
 function* watchLoadUserPosts() {
-  yield takeLatest(LOAD_USER_POSTS_REQUEST, loadUserPosts);
+  yield throttle(2000, LOAD_USER_POSTS_REQUEST, loadUserPosts);
 }
 
 function uploadImagesAPI(formData) {

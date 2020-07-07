@@ -44,6 +44,9 @@
     "no-alert": "off",
     "react/prop-types": "off",
     "no-nested-ternary": "off",
-    "no-console": "off"
+    "no-console": "off",
+    "max-len": "off",
+    "no-undef": "off",
+    "no-param-reassign": "off"
   }
 }

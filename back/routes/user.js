@@ -194,11 +194,17 @@ router.delete('/:id/follower', (req, res) => {
 });
 router.get('/:id/posts', async (req, res, next) => {
   try{
+    let where = {
+      UserId: parseInt(req.params.id, 10) || (req.user && req.user.id) || 0,
+      RetweetId: null,
+    };
+    if (parseInt(req.query.lastId, 10)){
+      where.id = {
+          [db.Sequelize.Op.lt]: parseInt(req.query.lastId, 10), //lt 속성은 less than, 전체적 의미는 lastId보다 작은 id를 가져온다.
+      };
+    }
     const posts = await db.Post.findAll({
-      where: {
-        UserId: parseInt(req.params.id, 10) || (req.user && req.user.id) || 0,
-        RetweetId: null,
-      },
+      where,
       include: [{
         model: db.User,
         attributes: ['id', 'nickname'],
@@ -210,6 +216,8 @@ router.get('/:id/posts', async (req, res, next) => {
         as: 'Likers',
         attributes: ['id'],
       }],
+      order: [['createdAt', 'DESC']],
+      limit: parseInt(req.query.limit, 10),
     });
     res.json(posts);
   } catch (e) {

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import {
   Button, List, Card, Icon,
 } from 'antd';
@@ -11,8 +11,35 @@ import PostCard from '../components/PostCard';
 
 const Profile = () => {
   const dispatch = useDispatch();
-  const { followerList, followingList } = useSelector(state => state.user);
-  const { mainPosts } = useSelector(state => state.post);
+  const {
+    followerList, followingList, hasMoreFollower, hasMoreFollowing,
+  } = useSelector(state => state.user);
+  const { mainPosts, hasMorePost } = useSelector(state => state.post);
+  const { me } = useSelector(state => state.user.me);
+  const countRef = useRef([]);
+
+  const onScroll = useCallback(() => {
+    if (window.scrollY + document.documentElement.clientHeight > document.documentElement.scrollHeight - 300) {
+      if (hasMorePost) {
+        const lastId = mainPosts[mainPosts.length - 1] && mainPosts[mainPosts.length - 1].id;
+        if (!countRef.current.includes(lastId)) {
+          dispatch({
+            type: LOAD_USER_POSTS_REQUEST,
+            lastId,
+          });
+          countRef.current.push(lastId);
+        }
+      }
+    }
+  }, [hasMorePost, mainPosts.length]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [mainPosts.length]);
+
   const onUnfollow = useCallback(userId => () => {
     dispatch({
       type: UNFOLLOW_USER_REQUEST,
@@ -46,7 +73,7 @@ const Profile = () => {
         grid={{ gutter: 4, xs: 2, md: 3 }}
         size="small"
         header={<div>팔로잉 목록</div>}
-        loadMore={<Button style={{ width: '100%' }} onClick={loadMoreFollowings}>더 보기</Button>}
+        loadMore={hasMoreFollowing && <Button style={{ width: '100%' }} onClick={loadMoreFollowings}>더 보기</Button>}
         bordered
         dataSource={followingList}
         renderItem={(item) => (
@@ -60,7 +87,7 @@ const Profile = () => {
         grid={{ gutter: 4, xs: 2, md: 3 }}
         size="small"
         header={<div>팔로워 목록</div>}
-        loadMore={<Button style={{ width: '100%' }} onClick={loadMoreFollowers}>더 보기</Button>}
+        loadMore={hasMoreFollower && <Button style={{ width: '100%' }} onClick={loadMoreFollowers}>더 보기</Button>}
         bordered
         dataSource={followerList}
         renderItem={(item) => (
@@ -90,6 +117,7 @@ Profile.getInitialProps = async (context) => {
   });
   context.store.dispatch({
     type: LOAD_USER_POSTS_REQUEST,
+    lastId: 0,
     data: state.user.me && state.user.me.id,
   });
   // 하지만 아직 LOAD_USER_SUCCESS 전이기 때문에 me 존재 x

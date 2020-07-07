@@ -8,12 +8,12 @@ import { ADD_POST_REQUEST, REMOVE_IMAGE, UPLOAD_IMAGES_REQUEST } from '../reduce
 const PostForm = () => {
   const dispatch = useDispatch();
   const [text, setText] = useState('');
-  const { imagePaths, isAddingPost, postAdded } = useSelector((state) => state.post);
+  const { imagePaths, isAddingPost, addPostDone } = useSelector((state) => state.post);
   const imageInput = useRef();
 
   useEffect(() => {
     setText('');
-  }, [postAdded]);
+  }, [addPostDone]);
   const onSubmitForm = useCallback((e) => {
     e.preventDefault();
     if (!text || !text.trim()) {
