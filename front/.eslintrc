@@ -47,6 +47,8 @@
     "no-console": "off",
     "max-len": "off",
     "no-undef": "off",
-    "no-param-reassign": "off"
+    "no-param-reassign": "off",
+    "jsx-a11y/html-has-lang": "off",
+    "react/jsx-no-undef": "off"
   }
 }

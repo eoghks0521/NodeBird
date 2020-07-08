@@ -29,7 +29,7 @@ import {
   LIKE_POST_SUCCESS,
   LIKE_POST_FAILURE, UNLIKE_POST_SUCCESS, UNLIKE_POST_FAILURE, UNLIKE_POST_REQUEST,
   RETWEET_REQUEST, RETWEET_SUCCESS, RETWEET_FAILURE,
-  REMOVE_POST_SUCCESS, REMOVE_POST_FAILURE, REMOVE_POST_REQUEST,
+  REMOVE_POST_SUCCESS, REMOVE_POST_FAILURE, REMOVE_POST_REQUEST, LOAD_POST_REQUEST, LOAD_POST_FAILURE, LOAD_POST_SUCCESS,
 } from '../reducers/post';
 
 import {
@@ -162,7 +162,9 @@ function* watchLoadHashtagPosts() {
 }
 
 function loadUserPostsAPI(id, lastId = 0, limit = 10) {
-  return axios.get(`/user/${id || 0}/posts?lastId=${lastId}&limit=${limit}`);
+  return axios.get(`/user/${id || 0}/posts?lastId=${lastId}&limit=${limit}`, {
+    withCredentials: true,
+  });
 }
 
 function* loadUserPosts(action) {
@@ -319,6 +321,29 @@ function* watchRemovePost() {
   yield takeLatest(REMOVE_POST_REQUEST, removePost);
 }
 
+function loadPostAPI(postId) {
+  return axios.get(`/post/${postId}`);
+}
+
+function* loadPost(action) {
+  try {
+    const result = yield call(loadPostAPI, action.data);
+    yield put({
+      type: LOAD_POST_SUCCESS,
+      data: result.data,
+    });
+  } catch (e) {
+    console.error(e);
+    yield put({
+      type: LOAD_POST_FAILURE,
+      error: e,
+    });
+  }
+}
+function* watchloadPost() {
+  yield takeLatest(LOAD_POST_REQUEST, loadPost);
+}
+
 export default function* postSaga() {
   yield all([
     fork(watchAddPost),
@@ -332,5 +357,6 @@ export default function* postSaga() {
     fork(watchUnLikePost),
     fork(watchRetweet),
     fork(watchRemovePost),
+    fork(watchloadPost),
   ]);
 }
