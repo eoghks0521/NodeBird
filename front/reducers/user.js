@@ -1,3 +1,5 @@
+import produce from 'immer';
+
 export const initialState = {
   isLoggingOut: false, // 로그아웃 시도중
   isLoggingIn: false, // 로그인 시도중
@@ -62,7 +64,7 @@ export const EDIT_NICKNAME_FAILURE = 'EDIT_NICKNAME_FAILURE';
 export const ADD_POST_TO_ME = 'ADD_POST_TO_ME';
 export const REMOVE_POST_OF_ME = 'REMOVE_POST_OF_ME';
 
-export default (state = initialState, action) => {
+const reducer = (state = initialState, action) => produce(state, (draft) => {
   switch (action.type) {
     case LOG_IN_REQUEST: {
       return {
@@ -191,10 +193,9 @@ export default (state = initialState, action) => {
     }
 
     case LOAD_FOLLOWERS_REQUEST: {
-      return {
-        ...state,
-        hasMoreFollower: action.offset ? state.hasMoreFollower : true, // 처음 데이터를 가져올 때 더보기 버튼을 보여줌
-      };
+      draft.followerList = !action.offset ? [] : draft.followerList;
+      draft.hashMoreFollower = action.offset ? draft.hashMoreFollower : true;
+      break;
     }
     case LOAD_FOLLOWERS_SUCCESS: {
       return {
@@ -209,10 +210,9 @@ export default (state = initialState, action) => {
       };
     }
     case LOAD_FOLLOWINGS_REQUEST: {
-      return {
-        ...state,
-        hasMoreFollowing: action.offset ? state.hasMoreFollowing : true,
-      };
+      draft.followingList = !action.offset ? [] : draft.followingList;
+      draft.hashMoreFollowing = action.offset ? draft.hashMoreFollowing : true;
+      break;
     }
     case LOAD_FOLLOWINGS_SUCCESS: {
       return {
@@ -298,4 +298,6 @@ export default (state = initialState, action) => {
       };
     }
   }
-};
+});
+
+export default reducer;

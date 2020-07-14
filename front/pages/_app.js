@@ -60,9 +60,7 @@ NodeBird.propTypes = {
 NodeBird.getInitialProps = async (context) => {
   const { ctx, Component } = context;
   let pageProps = {};
-  if (Component.getInitialProps) {
-    pageProps = await Component.getInitialProps(ctx);
-  }
+
   const state = ctx.store.getState();
   // 기존에 클라이언트에서 직접 서버에 요청을 보낼 때는 브라우저가 쿠키를 같이 넣어줌
   // 서버사이드렌더링에 경우 서버가 요청을 보내기 때문에(브라우저가 없음) 직접 쿠키를 넣어주어야 한다.
@@ -75,6 +73,9 @@ NodeBird.getInitialProps = async (context) => {
     ctx.store.dispatch({
       type: LOAD_USER_REQUEST,
     });
+  }
+  if (Component.getInitialProps) {
+    pageProps = await Component.getInitialProps(ctx) || {};
   }
   return { pageProps };
 };

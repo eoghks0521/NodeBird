@@ -108,10 +108,9 @@ const reducer = (state = initialState, action) => {
       case LOAD_MAIN_POSTS_REQUEST:
       case LOAD_HASHTAG_POSTS_REQUEST:
       case LOAD_USER_POSTS_REQUEST: {
-        console.log(action.lastId, '======================');
         return {
           ...state,
-          mainPosts: action.lastId === 0 ? [] : state.mainPosts,
+          mainPosts: !action.lastId ? [] : state.mainPosts,
           hasMorePost: action.lastId ? state.hasMorePost : true,
         };
       }

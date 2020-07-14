@@ -6,6 +6,9 @@ import Link from 'next/link';
 // import {RetweetOutlined,HeartOutlined,MessageOutlined,EllipsisOutlined} from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
+import styled from 'styled-components';
+import PostImages from '../components/PostImages';
+import PostCardContent from '../components/PostCardContent';
 import {
   ADD_COMMENT_REQUEST,
   LOAD_COMMENTS_REQUEST,
@@ -18,8 +21,10 @@ import {
   FOLLOW_USER_REQUEST,
   UNFOLLOW_USER_REQUEST,
 } from '../reducers/user';
-import PostImages from './PostImages';
-import PostCardContent from './PostCardContent';
+
+const CardWrapper = styled.div`
+  margin-bottom: 20px;
+`;
 
 const PostCard = ({ post }) => {
   const [commentFormOpened, setCommentFormOpened] = useState(false);
@@ -109,9 +114,8 @@ const PostCard = ({ post }) => {
     });
   }, []);
   return (
-    <div>
+    <CardWrapper>
       <Card
-        key={+post.createdAt}
         cover={post.Images && post.Images[0] && <PostImages images={post.Images} />}
         actions={[
           <Icon type="retweet" key="retweet" onClick={onRetweet} />,
@@ -200,7 +204,7 @@ const PostCard = ({ post }) => {
           />
         </>
       )}
-    </div>
+    </CardWrapper>
   );
 };
 PostCard.propTypes = {
