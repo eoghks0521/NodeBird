@@ -19,7 +19,7 @@
     "express-session": "^1.17.1",
     "immer": "^7.0.5",
     "morgan": "^1.10.0",
-    "next": "^8.1.0",
+    "next": "^13.0.3",
     "next-redux-saga": "^4.1.2",
     "next-redux-wrapper": "^3.0.0-alpha.2",
     "prop-types": "^15.7.2",
